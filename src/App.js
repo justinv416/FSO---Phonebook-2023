@@ -1,25 +1,60 @@
-import logo from './logo.svg';
-import './App.css';
+import { useState } from 'react'
+import Filter from './components/Filter';
+import PersonForm from './components/PersonForm';
+import Persons from './components/Persons';
 
-function App() {
+const App = () => {
+  const [persons, setPersons] = useState([
+    { name: 'Arto Hellas' }
+  ]) 
+  const [newName, setNewName] = useState('');
+  const [newNumber, setNewNumber] = useState('');
+  const [filterPerson, setFilterPerson] = useState('');
+
+  // Sets new name 
+  const handleNewName = (event) => {
+    setNewName(event.target.value)
+  }
+
+  // Sets new number
+  const handleNewNumber = (event) => {
+    setNewNumber(event.target.value)
+  }
+
+  // Search for existing contact
+  const handleSearch = (event) => {
+    setFilterPerson(event.target.value)
+  }
+
+  // Add new person to phonebook
+  const handleNewPerson = (event) => {
+    event.preventDefault()
+    const newPerson = {
+      name: newName,
+      number: newNumber
+    }
+
+    // Alert if same person exists
+    if(persons.find((person) => person.name === newPerson.name)) {
+      alert(`${newName} already exists`)
+      return false
+    } else {
+      setPersons(persons.concat(newPerson))
+    }
+  }
+
+  // Switch for filtered contacts
+  const personsToShow = filterPerson ? persons.filter(person => person.name.toLowerCase().includes(filterPerson)) : persons
+ 
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <h2>Phonebook</h2>
+      <Filter handleSearch={handleSearch} filterPerson={filterPerson}/>
+      <PersonForm handleNewPerson={handleNewPerson} newName={newName} handleNewName={handleNewName} newNumber={newNumber} handleNewNumber={handleNewNumber}/>
+      <h2>Numbers</h2>
+      <Persons personsToShow={personsToShow}/>
     </div>
-  );
+  )
 }
 
-export default App;
+export default App
