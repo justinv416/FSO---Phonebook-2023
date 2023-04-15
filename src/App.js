@@ -1,14 +1,8 @@
+import personService from './services/persons';
 import { useState, useEffect } from 'react'
 import Filter from './components/Filter';
 import PersonForm from './components/PersonForm';
-import Persons from './components/Persons';
-import axios from 'axios';
-
-// const promise = axios.get('http://localhost:3001/persons');
-
-// promise.then(response => {
-//   console.log(response)
-// })
+import Person from './components/Person';
 
 const App = () => {
   const [persons, setPersons] = useState([]); 
@@ -17,13 +11,24 @@ const App = () => {
   const [filterPerson, setFilterPerson] = useState('');
 
   useEffect(() => {
-    axios
-      .get('http://localhost:3001/persons')
+    personService
+      .getAll()
       .then(response => {
-        console.log(response.data)
         setPersons(response.data)
       })
   }, [])
+
+  const toggleImportanceOf = (id) => {
+    const person = persons.find(person => person.id === id)
+    const changedPerson = {
+      ...person, important: !person.important
+    }
+    personService
+      .update(id, changedPerson)
+      .then(response => {
+        setPersons(persons.map(person => person.id !== id ? person : response.data))
+      })
+  }
 
   // Sets new name 
   const handleNewName = (event) => {
@@ -48,13 +53,17 @@ const App = () => {
       number: newNumber
     }
 
-    // Alert if same person exists
-    if(persons.find((person) => person.name === newPerson.name)) {
-      alert(`${newName} already exists`)
-      return false
-    } else {
-      setPersons(persons.concat(newPerson))
-    }
+    personService
+      .create(newPerson)
+      .then(response => {
+        // Alert if same person exists
+        if(persons.find((person) => person.name === newPerson.name)) {
+          alert(`${newName} already exists`)
+          return false
+        } else {
+          setPersons(persons.concat(response.data))
+        }
+      })
   }
 
   // Switch for filtered contacts
@@ -66,7 +75,13 @@ const App = () => {
       <Filter handleSearch={handleSearch} filterPerson={filterPerson}/>
       <PersonForm handleNewPerson={handleNewPerson} newName={newName} handleNewName={handleNewName} newNumber={newNumber} handleNewNumber={handleNewNumber}/>
       <h2>Numbers</h2>
-      <Persons personsToShow={personsToShow}/>
+      <ul>
+        {personsToShow.map(person => <Person 
+          key={person.name}
+          person={person}
+          toggleImportant={() => toggleImportanceOf(person.id)}
+        />)}
+      </ul>
     </div>
   )
 }
