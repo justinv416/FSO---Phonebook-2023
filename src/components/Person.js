@@ -1,12 +1,11 @@
 import React from 'react'
 
-const Person = ({person, toggleImportant}) => {
-    const label = person.important ? 'make not important' : 'make important'
-    
+const Person = ({person, deleteContact}) => {
+        
     return (
         <li>
             {person.name} {person.number}
-            <button onClick={toggleImportant}>{label}</button>
+            <button onClick={deleteContact}>Delete</button>
         </li>
     )
 }
