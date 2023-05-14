@@ -56,27 +56,46 @@ const App = () => {
 
   // Add new person to phonebook
   const handleNewPerson = (event) => {
-    event.preventDefault()
+    event.preventDefault();
+
     const newPerson = {
       name: newName,
       number: newNumber
-    }
+    };
 
-    personService
-      .create(newPerson)
-      .then(response => {
-        // Alert if same person exists
-        if(persons.find((person) => person.name === newPerson.name)) {
-          alert(`${newName} already exists`)
-          return false
-        } else {
-          setPersons(persons.concat(response.data))
-          setErrorMessage(`${newName} added to the phonebook`);
-          setTimeout(() => {
-            setErrorMessage(null)
-          }, 5000)
+    const samePerson = persons.find(person => person.name === newPerson.name);
+
+    if (samePerson) {
+
+      const confirmPerson = window.confirm(`${newName} is already added to phonebook, replace the old number with a new one?`);
+      
+      if (confirmPerson) {
+        const updatedPerson = {
+          ...samePerson,
+          number: newNumber
         }
-      })
+
+        personService
+          .update(samePerson.id, updatedPerson)
+          .then (response => {
+            setPersons(persons.map(person => person.id !== samePerson.id ? person : response.data))
+            setErrorMessage(`${newName}'s number has been updated`);
+            setTimeout(() => {
+              setErrorMessage(null)
+            }, 5000)   
+          })
+      } else {
+        personService
+          .create(newPerson)
+          .then(response => {
+            setPersons(persons.concat(response.data))
+            setErrorMessage(`${newName} added to the phonebook`);
+            setTimeout(() => {
+              setErrorMessage(null)
+            }, 5000)          
+          })
+      }
+    }
   }
 
   // Switch for filtered contacts
